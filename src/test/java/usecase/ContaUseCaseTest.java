@@ -90,4 +90,42 @@ public class ContaUseCaseTest {
     public void testeExemplo1() {
         System.out.println("testeExemplo");
     }
+
+     @Test
+    public void deveCriarContaCorretamente(){
+        //Given
+        Cliente cliente3 = new Cliente("Igor", "222.222.222.22");
+        Conta conta3 = new Conta("3", cliente3);
+
+        //When
+        contaUseCase.criarConta(conta3);
+
+        //Then
+        Assert.assertNotNull(conta3);
+    }
+
+    @Test
+    public void deveBuscarContaCorretamente(){
+        //Given
+        String idConta = "1";
+        //When
+        Conta conta = contaUseCase.buscarConta(idConta);
+        //Then
+        Assert.assertNotNull(conta);
+        Assert.assertEquals(idConta,conta.getId());
+
+    }
+
+    @Test
+    public void deveEmprestarCorretamente(){
+        //Given
+        String idConta = "1";
+
+
+        //When
+
+
+        //Then
+
+    }
 }
