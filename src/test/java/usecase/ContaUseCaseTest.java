@@ -30,6 +30,7 @@ public class ContaUseCaseTest {
 
         Cliente cliente1 = new Cliente("Ana", "111.111.111.11");
         Conta conta1 = new Conta("1", cliente1);
+        conta1.adicionarSaldoParaEmprestimo(1_000d);
 
         Cliente cliente2 = new Cliente("Carla", "222.222.222.22");
         Conta conta2 = new Conta("2", cliente2);
@@ -117,15 +118,19 @@ public class ContaUseCaseTest {
     }
 
     @Test
-    public void deveEmprestarCorretamente(){
-        //Given
-        String idConta = "1";
+    public void deveEmprestarCorretamente() throws Exception {
+        Conta conta = contaUseCase.buscarConta("1");
+        Double saldoInicial = conta.getSaldo();
+        Double saldoInicialEmprestimo = conta.getSaldoDisponivelParaEmprestimo();
+        Double valor = 1_000d;
 
+        try {
+            contaUseCase.emprestimo(conta.getId(), valor);
 
-        //When
-
-
-        //Then
-
+            Assert.assertEquals(conta.getSaldoDisponivelParaEmprestimo(), (saldoInicialEmprestimo - valor), 0);
+            Assert.assertEquals(conta.getSaldo(), (saldoInicial + valor), 0);
+        } catch (Exception e) {
+            Assert.assertEquals("Conta invalida - [id: " + conta.getId() + "]", e.getMessage());
+        }
     }
 }
