@@ -17,6 +17,13 @@ public class Conta {
         this.saldoDisponivelParaEmprestimo = 0.0;
     }
 
+    public Conta(String id, Cliente cliente, Double saldo, Double saldoDisponivelParaEmprestimo) {
+        this.id = id;
+        this.cliente = cliente;
+        this.saldo = saldo;
+        this.saldoDisponivelParaEmprestimo = saldoDisponivelParaEmprestimo;
+    }
+
     public void depositar(Double valor) {
         this.saldo += valor;
     }

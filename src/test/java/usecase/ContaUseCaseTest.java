@@ -4,8 +4,13 @@ import domain.gateway.ContaGateway;
 import domain.model.Cliente;
 import domain.model.Conta;
 import domain.usecase.ContaUseCase;
+import infra.database.H2Config;
+import infra.gateway.ContaGatewayDB;
 import infra.gateway.ContaGatewayLocal;
+import org.h2.tools.Server;
 import org.junit.*;
+
+import java.sql.SQLException;
 
 public class ContaUseCaseTest {
 
@@ -14,25 +19,26 @@ public class ContaUseCaseTest {
 
     // @BeforeClass - antes da classe ser instanciada
     @BeforeClass
-    public static void beforeClass() {
-        // Subir banco
-        // Preparar alguma config
-        System.out.println("Before class");
+    public static void beforeClass() throws SQLException {
+        ContaGatewayDB contaGateway = new ContaGatewayDB(H2Config.getDataSource());
+        contaGateway.createClienteTable();
+        contaGateway.createContaTable();
+
+        Server.createWebServer("-web", "-webAllowOthers", "-webPort", "8082")
+                .start();
     }
 
     // @Before - antes de CADA teste
     @Before
     public void before() {
-        System.out.println("before");
-
-        contaGateway = new ContaGatewayLocal();
+        contaGateway = new ContaGatewayDB(H2Config.getDataSource());
         contaUseCase = new ContaUseCase(contaGateway);
 
-        Cliente cliente1 = new Cliente("Ana", "111.111.111.11");
+        Cliente cliente1 = new Cliente("1", "Ana", "111.111.111.11");
         Conta conta1 = new Conta("1", cliente1);
         conta1.adicionarSaldoParaEmprestimo(1_000d);
 
-        Cliente cliente2 = new Cliente("Carla", "222.222.222.22");
+        Cliente cliente2 = new Cliente("2", "Carla", "222.222.222.22");
         Conta conta2 = new Conta("2", cliente2);
 
         contaGateway.save(conta1);
@@ -42,54 +48,48 @@ public class ContaUseCaseTest {
     // @After
     @After
     public void after() {
-        System.out.println("After");
     }
 
     // @AfterClass
     @AfterClass
     public static void afterClass() {
-        System.out.println("After class");
     }
 
     @Test
     public void deveTransferirCorretamenteEntreDuasContas() throws Exception {
-        // Mocks
-
-        System.out.println("deveTransferirCorretamenteEntreDuasContas");
         // Given - Dado
         contaUseCase.depositar("1", 100.0);
+        Conta conta1 = contaGateway.findById("1");
+        Conta conta2 = contaGateway.findById("2");
+        Double saldoAtualConta1 = conta1.getSaldo();
+        Double saldoAtualConta2 = conta2.getSaldo();
 
         // When - Quando
         contaUseCase.transferir("1", "2", 20.0);
 
         // Then - Entao
-        // - Valor esperado - Valor atual
-        Double valorEsperadoConta1 = 80.0;
-        Conta conta1DB = contaGateway.findById("1");
-        Assert.assertEquals(valorEsperadoConta1, conta1DB.getSaldo());
+        Double valorEsperadoConta1 = saldoAtualConta1 - 20.0;
+        conta1 = contaGateway.findById("1");
+        Assert.assertEquals(valorEsperadoConta1, conta1.getSaldo());
 
-        Double valorEsperadoConta2 = 20.0;
-        Conta conta2DB = contaGateway.findById("2");
-        Assert.assertEquals(valorEsperadoConta2, conta2DB.getSaldo());
+        Double valorEsperadoConta2 = saldoAtualConta2 + 20.0;
+        conta2 = contaGateway.findById("2");
+        Assert.assertEquals(valorEsperadoConta2, conta2.getSaldo());
     }
 
     @Test
     public void deveDepositarCorretamente() throws Exception {
-        System.out.println("deveDepositarCorretamente");
         // Given -  Dado
+        Conta conta = contaGateway.findById("1");
+        Double saldoAtual = conta.getSaldo();
 
         // When - Quando
         contaUseCase.depositar("1", 10.0);
-        Conta conta1 = contaGateway.findById("1");
+        conta = contaGateway.findById("1");
 
         // Then
-        Double valorEsperado = 10.0;
-        Assert.assertEquals(valorEsperado, conta1.getSaldo());
-    }
-
-    @Test
-    public void testeExemplo1() {
-        System.out.println("testeExemplo");
+        Double valorEsperado = 10.0 + saldoAtual;
+        Assert.assertEquals(valorEsperado, conta.getSaldo());
     }
 
      @Test
