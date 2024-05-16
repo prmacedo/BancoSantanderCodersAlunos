@@ -126,6 +126,7 @@ public class ContaUseCaseTest {
 
         try {
             contaUseCase.emprestimo(conta.getId(), valor);
+            conta = contaUseCase.buscarConta("1");
 
             Assert.assertEquals(conta.getSaldoDisponivelParaEmprestimo(), (saldoInicialEmprestimo - valor), 0);
             Assert.assertEquals(conta.getSaldo(), (saldoInicial + valor), 0);
