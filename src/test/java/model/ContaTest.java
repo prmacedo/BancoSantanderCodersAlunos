@@ -3,8 +3,7 @@ package model;
 import domain.exception.SaldoInvalidoException;
 import domain.model.Cliente;
 import domain.model.Conta;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.*;
 
 public class ContaTest {
 
